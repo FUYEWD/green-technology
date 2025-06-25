@@ -8,9 +8,6 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?logo=bootstrap&logoColor=white)
 
-## 🚀 線上體驗
-
-[點擊這裡體驗應用程式](https://yourusername.github.io/carbon-footprint-calculator/)
 
 ## 📁 專案結構
 
@@ -219,9 +216,8 @@ const CARBON_DATA = {
 
 ## 📧 聯絡資訊
 
-- 作者：[Your Name]
-- Email：your.email@example.com
-- 專案連結：https://github.com/yourusername/carbon-footprint-calculator
+- 作者：張為凱
+- Email：a0966204830@gmail.com
 
 ## 🔗 相關連結
 
@@ -229,7 +225,6 @@ const CARBON_DATA = {
 - [環保生活指南](https://example.com)
 - [氣候變遷資訊](https://example.com)
 
----
 
 ⭐ 如果這個專案對你有幫助，請給個星星支持！
 
