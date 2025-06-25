@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="環保戰士碳足跡計算器 - 詳細記錄日常交通和三餐的碳排放量" />
+    <title>環保戰士：碳足跡任務 - 完整版</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --primary-blue: #3a7bd5;
+            --secondary-blue: #00d2ff;
+            --accent-green: #00cc44;
+            --accent-light-green: #00ff88;
+            --text-light: #eef9ff;
+            --text-info: #b2f7d9;
+            --shadow-blue: #0077cc;
+            --shadow-green: #00ff77;
+            --bg-overlay: rgba(0, 0, 0, 0.25);
+            --bg-section: rgba(255, 255, 255, 0.12);
+            --meal-morning: #ffeb3b;
+            --meal-noon: #ff9800;
+            --meal-evening: #9c27b0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 1.5rem 1rem 3rem;
+            margin: 0;
+        }
+
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #00f9ff;
+            text-align: center;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+        }
+
+        .section-card {
+            background: var(--bg-section);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 15px rgba(0, 187, 136, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-shadow: 0 0 8px var(--shadow-blue);
+        }
+
+        .meal-section {
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .meal-section.breakfast {
+            border-color: var(--meal-morning);
+            background: rgba(255, 235, 59, 0.1);
+        }
+
+        .meal-section.lunch {
+            border-color: var(--meal-noon);
+            background: rgba(255, 152, 0, 0.1);
+        }
+
+        .meal-section.dinner {
+            border-color: var(--meal-evening);
+            background: rgba(156, 39, 176, 0.1);
+        }
+
+        .meal-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .food-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .food-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .food-controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 0.75rem;
+            align-items: end;
+        }
+
+        .custom-food-controls {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr auto;
+            gap: 0.75rem;
+            align-items: end;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 8px rgba(0, 204, 68, 0.3);
+        }
+
+        .btn-add,
+        .btn-remove {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: var(--accent-light-green);
+            transform: scale(1.05);
+        }
+
+        .btn-remove {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: #ff3742;
+            transform: scale(1.05);
+        }
+
+        .btn-calculate {
+            background: linear-gradient(45deg, var(--accent-green), var(--accent-light-green));
+            border: none;
+            font-weight: 700;
+            font-family: 'Press Start 2P', cursive;
+            box-shadow: 0 0 20px var(--shadow-green);
+            transition: all 0.3s ease-in-out;
+            width: 100%;
+            padding: 1.25rem 2rem;
+            font-size: 1rem;
+            border-radius: 12px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-calculate:hover:not(:disabled) {
+            box-shadow: 0 0 30px var(--accent-light-green);
+            transform: translateY(-2px);
+        }
+
+        .result-container {
+            background: var(--bg-overlay);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+            box-shadow: 0 0 25px #00ffbb;
+            position: relative;
+            display: none;
+            backdrop-filter: blur(15px);
+        }
+
+        .result-container[aria-expanded="true"] {
+            display: block;
+        }
+
+        .result-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .breakdown-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: #00ffbb;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .close-button:hover {
+            color: #33ffaa;
+            transform: scale(1.1);
+        }
+
+        .add-custom-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            color: var(--text-light);
+            padding: 1rem;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .add-custom-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: var(--accent-green);
+        }
+
+        @media (max-width: 768px) {
+            .food-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .custom-food-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .result-breakdown {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="main-container" role="main">
+        <header>
+            <h1>🌍 環保戰士：碳足跡任務</h1>
+        </header>
+
+        <form id="carbonForm" novalidate>
+            <!-- 交通部分 -->
+            <div class="section-card">
+                <h2 class="section-title">🚗 交通紀錄</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="transport">交通方式：</label>
+                        <select id="transport" required>
+                            <option value="">請選擇</option>
+                            <option value="walk">🚶 步行 (0.0 kg CO₂/km)</option>
+                            <option value="bike">🚴 腳踏車 (0.0 kg CO₂/km)</option>
+                            <option value="bus">🚌 公車 (0.05 kg CO₂/km)</option>
+                            <option value="mrt">🚇 捷運 (0.03 kg CO₂/km)</option>
+                            <option value="car">🚗 汽車 (0.25 kg CO₂/km)</option>
+                            <option value="motorcycle">🏍️ 機車 (0.12 kg CO₂/km)</option>
+                            <option value="taxi">🚕 計程車 (0.30 kg CO₂/km)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="distance">總距離（公里）：</label>
+                        <input type="number" id="distance" min="0" max="1000" step="0.1" placeholder="0.0" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 餐點紀錄 -->
+            <div class="section-card">
+                <h2 class="section-title">🍽️ 餐點紀錄</h2>
+
+                <!-- 早餐 -->
+                <div class="meal-section breakfast" id="breakfast-section">
+                    <div class="meal-title">
+                        <span>🌅 早餐</span>
+                    </div>
+                    <div id="breakfast-items">
+                        <div class="food-item">
+                            <div class="food-controls">
+                                <div>
+                                    <label>食物類型：</label>
+                                    <select class="food-select" data-meal="breakfast">
+                                        <option value="">請選擇</option>
+                                        <option value="toast">吐司 (0.8 kg CO₂/份)</option>
+                                        <option value="sandwich">三明治 (1.5 kg CO₂/份)</option>
+                                        <option value="breakfast_set">早餐店套餐 (2.1 kg CO₂/份)</option>
+                                        <option value="congee">粥品 (0.6 kg CO₂/份)</option>
+                                        <option value="soy_milk">豆漿燒餅 (1.2 kg CO₂/份)</option>
+                                        <option value="fruit">水果 (0.3 kg CO₂/份)</option>
+                                        <option value="cereal">麥片 (0.9 kg CO₂/份)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>份數：</label>
+                                    <input type="number" class="food-quantity" min="0.1" max="10" step="0.1" value="1">
+                                </div>
+                                <button type="button" class="btn-remove" onclick="removeFoodItem(this)">移除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-custom-btn" onclick="addFoodItem('breakfast')">+ 新增早餐項目</button>
+                    <button type="button" class="add-custom-btn" onclick="addCustomFood('breakfast')"
+                        style="margin-top: 0.5rem;">+ 自定義食物</button>
+                </div>
+
+                <!-- 午餐 -->
+                <div class="meal-section lunch" id="lunch-section">
+                    <div class="meal-title">
+                        <span>☀️ 午餐</span>
+                    </div>
+                    <div id="lunch-items">
+                        <div class="food-item">
+                            <div class="food-controls">
+                                <div>
+                                    <label>食物類型：</label>
+                                    <select class="food-select" data-meal="lunch">
+                                        <option value="">請選擇</option>
+                                        <option value="bento">便當 (4.0 kg CO₂/份)</option>
+                                        <option value="fried_rice">炒飯/炒麵 (1.8 kg CO₂/份)</option>
+                                        <option value="noodles">湯麵 (2.2 kg CO₂/份)</option>
+                                        <option value="hamburger">漢堡 (3.2 kg CO₂/份)</option>
+                                        <option value="pizza">披薩 (2.8 kg CO₂/份)</option>
+                                        <option value="salad">沙拉 (0.8 kg CO₂/份)</option>
+                                        <option value="hot_pot">小火鍋 (4.5 kg CO₂/份)</option>
+                                        <option value="japanese">日式料理 (3.5 kg CO₂/份)</option>
+                                        <option value="vegetarian">素食便當 (1.2 kg CO₂/份)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>份數：</label>
+                                    <input type="number" class="food-quantity" min="0.1" max="10" step="0.1" value="1">
+                                </div>
+                                <button type="button" class="btn-remove" onclick="removeFoodItem(this)">移除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-custom-btn" onclick="addFoodItem('lunch')">+ 新增午餐項目</button>
+                    <button type="button" class="add-custom-btn" onclick="addCustomFood('lunch')"
+                        style="margin-top: 0.5rem;">+ 自定義食物</button>
+                </div>
+
+                <!-- 晚餐 -->
+                <div class="meal-section dinner" id="dinner-section">
+                    <div class="meal-title">
+                        <span>🌙 晚餐</span>
+                    </div>
+                    <div id="dinner-items">
+                        <div class="food-item">
+                            <div class="food-controls">
+                                <div>
+                                    <label>食物類型：</label>
+                                    <select class="food-select" data-meal="dinner">
+                                        <option value="">請選擇</option>
+                                        <option value="home_cooking">家常菜 (2.5 kg CO₂/份)</option>
+                                        <option value="hot_pot">火鍋 (5.5 kg CO₂/份)</option>
+                                        <option value="bbq">燒烤 (4.8 kg CO₂/份)</option>
+                                        <option value="steak">牛排 (6.2 kg CO₂/份)</option>
+                                        <option value="seafood">海鮮 (3.8 kg CO₂/份)</option>
+                                        <option value="snacks">小吃 (3.5 kg CO₂/份)</option>
+                                        <option value="fast_food">速食 (3.0 kg CO₂/份)</option>
+                                        <option value="vegetarian_dinner">素食晚餐 (1.5 kg CO₂/份)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>份數：</label>
+                                    <input type="number" class="food-quantity" min="0.1" max="10" step="0.1" value="1">
+                                </div>
+                                <button type="button" class="btn-remove" onclick="removeFoodItem(this)">移除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-custom-btn" onclick="addFoodItem('dinner')">+ 新增晚餐項目</button>
+                    <button type="button" class="add-custom-btn" onclick="addCustomFood('dinner')"
+                        style="margin-top: 0.5rem;">+ 自定義食物</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-calculate">
+                🚀 計算今日碳足跡
+            </button>
+        </form>
+
+        <section id="resultContainer" class="result-container" aria-expanded="false">
+            <button id="closeResultBtn" class="close-button" aria-label="關閉結果">&times;</button>
+            <div id="resultContent"></div>
+        </section>
+    </main>
+
+    <script>
+        const CARBON_DATA = {
+            transport: {
+                walk: 0.0, bike: 0.0, bus: 0.05, mrt: 0.03,
+                car: 0.25, motorcycle: 0.12, taxi: 0.30
+            },
+            food: {
+                // 早餐
+                toast: 0.8, sandwich: 1.5, breakfast_set: 2.1, congee: 0.6,
+                soy_milk: 1.2, fruit: 0.3, cereal: 0.9,
+                // 午餐
+                bento: 4.0, fried_rice: 1.8, noodles: 2.2, hamburger: 3.2,
+                pizza: 2.8, salad: 0.8, hot_pot: 4.5, japanese: 3.5, vegetarian: 1.2,
+                // 晚餐
+                home_cooking: 2.5, bbq: 4.8, steak: 6.2, seafood: 3.8,
+                snacks: 3.5, fast_food: 3.0, vegetarian_dinner: 1.5
+            }
+        };
+
+        const RANK_TITLES = [
+            { max: 3, title: "🌟 環保大天使", stars: 1, color: '#00ff88' },
+            { max: 7, title: "🌱 綠能天兵", stars: 2, color: '#33cc44' },
+            { max: 12, title: "♻️ 環保中隊長", stars: 3, color: '#ffff44' },
+            { max: 18, title: "🌿 綠能小騎士", stars: 4, color: '#ff9900' },
+            { max: Infinity, title: "💨 碳汙染惡魔", stars: 5, color: '#ff3300' }
+        ];
+
+        function addFoodItem(mealType) {
+            const container = document.getElementById(`${mealType}-items`);
+            const foodOptions = getFoodOptions(mealType);
+
+            const newItem = document.createElement('div');
+            newItem.className = 'food-item';
+            newItem.innerHTML = `
+        <div class="food-controls">
+          <div>
+            <label>食物類型：</label>
+            <select class="food-select" data-meal="${mealType}">
+              <option value="">請選擇</option>
+              ${foodOptions}
+            </select>
+          </div>
+          <div>
+            <label>份數：</label>
+            <input type="number" class="food-quantity" min="0.1" max="10" step="0.1" value="1">
+          </div>
+          <button type="button" class="btn-remove" onclick="removeFoodItem(this)">移除</button>
+        </div>
+      `;
+            container.appendChild(newItem);
+        }
+
+        function addCustomFood(mealType) {
+            const container = document.getElementById(`${mealType}-items`);
+
+            const newItem = document.createElement('div');
+            newItem.className = 'food-item';
+            newItem.innerHTML = `
+        <div class="custom-food-controls">
+          <div>
+            <label>自定義食物名稱：</label>
+            <input type="text" class="custom-food-name" placeholder="輸入食物名稱">
+          </div>
+          <div>
+            <label>碳排放係數 (kg CO₂/份)：</label>
+            <input type="number" class="custom-food-carbon" min="0" max="20" step="0.1" placeholder="2.0">
+          </div>
+          <div>
+            <label>份數：</label>
+            <input type="number" class="food-quantity" min="0.1" max="10" step="0.1" value="1">
+          </div>
+          <button type="button" class="btn-remove" onclick="removeFoodItem(this)">移除</button>
+        </div>
+      `;
+            container.appendChild(newItem);
+        }
+
+        function removeFoodItem(button) {
+            const mealSection = button.closest('.meal-section');
+            const itemsContainer = mealSection.querySelector('[id$="-items"]');
+
+            // 確保至少保留一個項目
+            if (itemsContainer.children.length > 1) {
+                button.closest('.food-item').remove();
+            } else {
+                alert('每餐至少需要保留一個項目');
+            }
+        }
+
+        function getFoodOptions(mealType) {
+            const options = {
+                breakfast: [
+                    'toast', 'sandwich', 'breakfast_set', 'congee',
+                    'soy_milk', 'fruit', 'cereal'
+                ],
+                lunch: [
+                    'bento', 'fried_rice', 'noodles', 'hamburger',
+                    'pizza', 'salad', 'hot_pot', 'japanese', 'vegetarian'
+                ],
+                dinner: [
+                    'home_cooking', 'hot_pot', 'bbq', 'steak',
+                    'seafood', 'snacks', 'fast_food', 'vegetarian_dinner'
+                ]
+            };
+
+            return options[mealType].map(food => {
+                const select = document.querySelector(`select[data-meal="${mealType}"] option[value="${food}"]`);
+                return select ? `<option value="${food}">${select.textContent}</option>` : '';
+            }).join('');
+        }
+
+        function calculateCarbon() {
+            let totalCarbon = 0;
+            let breakdown = {
+                transport: 0,
+                breakfast: 0,
+                lunch: 0,
+                dinner: 0,
+                details: {
+                    breakfast: [],
+                    lunch: [],
+                    dinner: []
+                }
+            };
+
+            // 計算交通
+            const transport = document.getElementById('transport').value;
+            const distance = parseFloat(document.getElementById('distance').value) || 0;
+            if (transport && distance > 0) {
+                breakdown.transport = CARBON_DATA.transport[transport] * distance;
+                totalCarbon += breakdown.transport;
+            }
+
+            // 計算各餐
+            ['breakfast', 'lunch', 'dinner'].forEach(meal => {
+                const items = document.querySelectorAll(`#${meal}-items .food-item`);
+                items.forEach(item => {
+                    const select = item.querySelector('.food-select');
+                    const customName = item.querySelector('.custom-food-name');
+                    const customCarbon = item.querySelector('.custom-food-carbon');
+                    const quantity = parseFloat(item.querySelector('.food-quantity').value) || 0;
+
+                    let carbon = 0;
+                    let foodName = '';
+
+                    if (select && select.value) {
+                        // 預設食物
+                        carbon = CARBON_DATA.food[select.value] * quantity;
+                        foodName = select.options[select.selectedIndex].text.split(' (')[0];
+                    } else if (customName && customName.value && customCarbon && customCarbon.value) {
+                        // 自定義食物
+                        carbon = parseFloat(customCarbon.value) * quantity;
+                        foodName = customName.value;
+                    }
+
+                    if (carbon > 0) {
+                        breakdown[meal] += carbon;
+                        breakdown.details[meal].push({
+                            name: foodName,
+                            carbon: carbon,
+                            quantity: quantity
+                        });
+                    }
+                });
+                totalCarbon += breakdown[meal];
+            });
+
+            return { totalCarbon, breakdown };
+        }
+
+        function getRank(totalCarbon) {
+            return RANK_TITLES.find(rank => totalCarbon <= rank.max);
+        }
+
+        function generateStars(count) {
+            return '★'.repeat(count) + '☆'.repeat(5 - count);
+        }
+
+        function displayResults({ totalCarbon, breakdown }) {
+            const rank = getRank(totalCarbon);
+
+            let detailsHTML = '';
+            ['breakfast', 'lunch', 'dinner'].forEach(meal => {
+                if (breakdown.details[meal].length > 0) {
+                    const mealNames = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐' };
+                    detailsHTML += `
+            <div class="breakdown-item">
+              <h4>${mealNames[meal]}</h4>
+              ${breakdown.details[meal].map(item =>
+                        `<div>${item.name} × ${item.quantity} = ${item.carbon.toFixed(2)} kg CO₂</div>`
+                    ).join('')}
+              <strong>小計: ${breakdown[meal].toFixed(2)} kg CO₂</strong>
+            </div>
+          `;
+                }
+            });
+
+            const resultHTML = `
+        <h2 style="color:${rank.color}; margin-bottom:1rem;">
+          ${rank.title} ${generateStars(rank.stars)}
+        </h2>
+        
+        <div class="result-breakdown">
+          <div class="breakdown-item">
+            <h4>🚗 交通</h4>
+            <div>${breakdown.transport.toFixed(2)} kg CO₂</div>
+          </div>
+          ${detailsHTML}
+        </div>
+        
+        <div style="font-size:1.5rem; margin:2rem 0; padding:1rem; background:rgba(255,255,255,0.1); border-radius:10px;">
+          <strong>今日總碳足跡: ${totalCarbon.toFixed(2)} kg CO₂</strong>
+        </div>
+        
+        <div style="font-size:0.9rem; color:#00ffbb; margin-top:1rem;">
+          💡 <em>環保建議:</em> 
+          ${totalCarbon > 15 ? '考慮減少肉類攝取和選擇大眾運輸工具' :
+                    totalCarbon > 8 ? '嘗試更多素食選項和綠色出行方式' :
+                        '持續保持環保的生活方式！'}
+        </div>
+      `;
+
+            document.getElementById('resultContent').innerHTML = resultHTML;
+            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('resultContainer').setAttribute('aria-expanded', 'true');
+        }
+
+        // 事件監聽
+        document.getElementById('carbonForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const results = calculateCarbon();
+            displayResults(results);
+
+            // 滾動到結果
+            document.getElementById('resultContainer').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+
+        document.getElementById('closeResultBtn').addEventListener('click', function () {
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('resultContainer').setAttribute('aria-expanded', 'false');
+        });
+    </script>
+</body>
+
+</html>
